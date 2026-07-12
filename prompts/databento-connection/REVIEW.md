@@ -52,8 +52,23 @@ the adversarial review findings, and what changed in the re-draft.
 
 `limit=10` vs `limit=1000` contradiction explained per dataset · equities Standard live includes core (L0) schemas, not just top-of-book · PAYG-off behavior marked undocumented (hedged) · auto-revoke clarified as public-exposure-only · portal click-paths added (API keys, Billing) · Phase 5 date derived from `get_dataset_range` end (never today/weekend/holiday) · socket probe tests **both** gateways · 5-connections/s-per-IP retry note · gate 10 made observable (paste run + runbook text) · intake trimmed (env-var question replaced by the gate-2 command; version asked as `python`/`python3`/`py`) · partial-intake protocol · key-rotation follow-ons (live disconnects; redo gate 2) · pending-license stop rule.
 
-## Final verification
+## Final verification (post-redraft)
 
-A post-redraft verification pass re-checked v2's technical claims against the repo sources
-and simulated executing the prompt for internal contradictions. Outcome and any residual
-notes are recorded in the pull request description.
+Two independent agents verified v2:
+
+- **Accuracy re-check against the repo sources**: ~48 claims checked, **0 wrong**, 4 minor
+  near-misses, all conservative in direction (the `ValueError` key-interpolation caution
+  only applies to missing/blank keys; an empty-string env var surfaces as 401 rather than
+  `ValueError`; the curl-alias note is PowerShell-5.1-specific; the heartbeat default
+  interval comes from the docs, not the client code). All four were folded in.
+- **Internal-coherence simulation**: 7 major + 11 minor findings, all fixed — notably:
+  the redaction format (`db-XXX…`) would itself have triggered the mandatory rotation
+  procedure (exemption added); gate 4 referenced a dataset only chosen in Phase 4
+  (default `EQUS.MINI` + re-run rule); the cost-abort thresholds contradicted each other
+  ($0.25/pull vs $0.10 total → unified at ≤$0.25 per pull, ≤$0.50 total); the live
+  decision table had an undecidable branch (replay-completed-with-no-data now splits on
+  market hours); the prompt never established the current date (clock command added);
+  gate 1 could pass in the wrong interpreter context (must run the way the user actually
+  runs Python + a `ModuleNotFoundError` troubleshooting branch); and the secrets policy
+  forbade the inline-key `setx`/`export` commands Phase 2 requires (carve-out worded
+  explicitly).
